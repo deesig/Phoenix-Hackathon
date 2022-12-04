@@ -71,4 +71,8 @@ public class SSPerson {
         assignedPerson = p;
     }
 
+    public SSPerson getPerson(){
+        return assignedPerson;
+    }
+
 }
