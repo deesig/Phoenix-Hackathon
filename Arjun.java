@@ -25,23 +25,42 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import javax.sound.sampled.*;
+import java.util.Collections;
 
 public class Arjun extends JPanel{
     // Fields:
-    public int titleX, titleY, gui, angle, tick, constantX, constantY;
+    public int titleX, titleY, gui, angle, tick, constantX, constantY, index;
     public static final int WIDTH = 1000;
     public static final int HEIGHT = 1000;
-    private JLabel name;
-    private JPanel north, south, east, west, menu, santaMenu, insert;
-    private JPanel north2, east2, west2, south2;
+    private JLabel name, wishName, wishList;
+    private JPanel menu, santaMenu, doneMenu, textMenu;
+    private JPanel north, south, east, west, insert;
+    private JPanel north2, east2, west2, south2, doneMenu2;
     private JButton testButton;
     private JTextField insertName, insertWish;
     private ImageIcon santaTitle, santaLogo;
     private Timer timer;
+    private ArrayList<SSPerson> people = new ArrayList<SSPerson>();
+    private ArrayList<String> wishlist = new ArrayList<String>();
+    public Star[] stars = new Star[4];
+    public Star2[] stars2 = new Star2[4];
+    public XmasTree[] trees = new XmasTree[2];
+    
     // private etc.
 
     // Panel Object
     public Arjun() {
+
+        stars[0] = new Star(800,100);
+        stars[1] = new Star(100, 50);
+        stars[2] = new Star(887,142);
+        stars[3] = new Star(100, 50);
+        stars2[0] = new Star2(154,162);
+        stars2[1] = new Star2(875, 50);
+        stars2[2] = new Star2(154,162);
+        stars2[3] = new Star2(875, 50);
+        trees[0] = new XmasTree(700, 500);
+        trees[1] = new XmasTree(10, 550);
 
         // Base Panel
         setLayout(new BorderLayout());
@@ -58,7 +77,7 @@ public class Arjun extends JPanel{
 
 
         // Instantiating Timer
-        timer = new Timer(1, new TimerListener());
+        timer = new Timer(100, new TimerListener());
         timer.start();
 
         // Menu Panel
@@ -188,23 +207,67 @@ public class Arjun extends JPanel{
                         wishLabel.setForeground(Color.WHITE);
                             wish2.add(wishLabel);
 
-                        JTextField insertWish = new JTextField();
+                        insertWish = new JTextField();
                         insertWish.setPreferredSize(new Dimension(0, HEIGHT/32));
                         insertWish.setFont(new Font("Roboto", Font.PLAIN, 20));
                             wish2.add(insertWish);
 
                     JPanel buttons = new JPanel(new BorderLayout());
-                        //buttons.setOpaque(false);
-                        buttons.setPreferredSize(new Dimension(0, HEIGHT/9));
+                    buttons.setOpaque(false);
+                    buttons.setPreferredSize(new Dimension(0, HEIGHT/9));
                         wish.add(buttons, BorderLayout.SOUTH);
 
                         JPanel fill2 = new JPanel();
                         fill2.setPreferredSize(new Dimension(0, HEIGHT/32));
-                        fill2.setBackground(Color.BLACK);
+                        fill2.setOpaque(false);
                             buttons.add(fill2, BorderLayout.NORTH);
-                
+                        
+                        JPanel buttons2 = new JPanel(new GridLayout(0, 3, HEIGHT/32, 0));
+                        buttons2.setOpaque(false);
+                        buttons.add(buttons2, BorderLayout.CENTER);
 
-            
+                            JButton done = new JButton("Done");
+                                done.addActionListener(new doneListener());
+                                done.setFont(new Font("Roboto", Font.BOLD, WIDTH/64));
+                                done.setBackground(Color.ORANGE);
+                                done.setForeground(Color.WHITE);
+                                done.setBorder(BorderFactory.createCompoundBorder(
+                                    BorderFactory.createCompoundBorder(
+                                    BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK),
+                                    BorderFactory.createMatteBorder(3,3,3,3, Color.BLACK)),
+                                BorderFactory.createCompoundBorder(
+                                    BorderFactory.createMatteBorder(2,2,2,2, Color.WHITE),
+                                    BorderFactory.createMatteBorder(6,3,6,3, Color.ORANGE.darker()))));                                
+                                buttons2.add(done);
+
+                            JButton addWish = new JButton("+ Wish");
+                                addWish.addActionListener(new addWishListener());
+                                addWish.setFont(new Font("Roboto", Font.BOLD, WIDTH/64));
+                                addWish.setBackground(Color.ORANGE);
+                                addWish.setForeground(Color.WHITE);
+                                addWish.setBorder(BorderFactory.createCompoundBorder(
+                                    BorderFactory.createCompoundBorder(
+                                    BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK),
+                                    BorderFactory.createMatteBorder(3,3,3,3, Color.BLACK)),
+                                BorderFactory.createCompoundBorder(
+                                    BorderFactory.createMatteBorder(2,2,2,2, Color.WHITE),
+                                    BorderFactory.createMatteBorder(6,3,6,3, Color.ORANGE.darker()))));               
+                                buttons2.add(addWish);
+
+                            JButton addPerson = new JButton("+ Person");
+                                addPerson.addActionListener(new addPersonListener());
+                                addPerson.setFont(new Font("Roboto", Font.BOLD, WIDTH/64));
+                                addPerson.setBackground(Color.ORANGE);
+                                addPerson.setForeground(Color.WHITE);
+                                addPerson.setBorder(BorderFactory.createCompoundBorder(
+                                    BorderFactory.createCompoundBorder(
+                                    BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK),
+                                    BorderFactory.createMatteBorder(3,3,3,3, Color.BLACK)),
+                                BorderFactory.createCompoundBorder(
+                                    BorderFactory.createMatteBorder(2,2,2,2, Color.WHITE),
+                                    BorderFactory.createMatteBorder(6,3,6,3, Color.ORANGE.darker()))));               
+                                buttons2.add(addPerson);
+
             // Fillers
             north2 = new JPanel();
                 north2.setPreferredSize(new Dimension(WIDTH, HEIGHT/3));
@@ -222,6 +285,42 @@ public class Arjun extends JPanel{
                 south2.setPreferredSize(new Dimension(WIDTH, HEIGHT/4));
                 south2.setOpaque(false);
                 santaMenu.add(south2, BorderLayout.SOUTH);
+        
+            doneMenu = new JPanel(new BorderLayout());
+            doneMenu.setBackground(Color.RED);
+            doneMenu.setPreferredSize(new Dimension(WIDTH/4, 0));
+            doneMenu.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK),
+                BorderFactory.createMatteBorder(3,3,3,3, Color.BLACK)),
+            BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(2,2,2,2, Color.WHITE),
+                BorderFactory.createMatteBorder(6,3,6,3, new Color(136,65,62)))));
+
+                JPanel fill3 = new JPanel();
+                fill3.setOpaque(false);
+                fill3.setPreferredSize(new Dimension(0, HEIGHT/32));
+                    doneMenu.add(fill3, BorderLayout.NORTH);
+
+                JPanel fill4 = new JPanel();
+                fill4.setOpaque(false);
+                fill4.setPreferredSize(new Dimension(HEIGHT/32, 0));
+                    doneMenu.add(fill4, BorderLayout.WEST);
+
+                JPanel fill5 = new JPanel();
+                fill5.setOpaque(false);
+                fill5.setPreferredSize(new Dimension(HEIGHT/32, 0));
+                    doneMenu.add(fill5, BorderLayout.EAST);
+
+                JPanel fill6 = new JPanel();
+                fill6.setOpaque(false);
+                fill6.setPreferredSize(new Dimension(0, WIDTH/32));
+                    doneMenu.add(fill6, BorderLayout.SOUTH);
+                
+                doneMenu2 = new JPanel(new GridLayout(4,0));
+                    doneMenu2.setOpaque(false);
+                    doneMenu.add(doneMenu2, BorderLayout.CENTER);
+
 
 
 
@@ -231,10 +330,22 @@ public class Arjun extends JPanel{
     }
 
     public void paintComponent(Graphics g) {
+
+
         Graphics2D g2D = (Graphics2D) g;
         GradientPaint blueToOrange = new GradientPaint(0, 0, new Color(60, 0, 16), 0, HEIGHT, new Color(255,0,35));
         g2D.setPaint(blueToOrange);
         g2D.fillRect(0, 0, WIDTH, HEIGHT);
+
+        GradientPaint blue = new GradientPaint(0, 0, new Color(60, 0, 16), 0, HEIGHT, new Color(255,0,35));
+        GradientPaint snow = new GradientPaint(0,0, new Color(255,255,255), 0, HEIGHT, new Color(247,247,247));
+        GradientPaint packedSnow = new GradientPaint(0,0, new Color(192,192,192), 0, HEIGHT, new Color(247,247,247));
+        g2D.setPaint(blue);
+        g2D.fillRect(0, 0, WIDTH, HEIGHT);
+        g2D.setPaint(snow);
+        g2D.fillOval(-100,800,WIDTH+200,350);
+        g2D.setPaint(packedSnow);
+        g2D.fillOval(-100,850,WIDTH+200,350);
 
         // Secret Santa Logo
         drawTitle(g);
@@ -247,11 +358,31 @@ public class Arjun extends JPanel{
 
     public void drawTitle(Graphics g) {
         g.drawImage(santaTitle.getImage(), titleX, titleY, (int)(675*0.8), (int)(288*0.8), null);
+        drawStar(g);
+        drawStar2(g);
+        drawTree(g);
     }
 
     public void drawLogo(Graphics g) {
         g.drawImage(santaLogo.getImage(), 500, 300, 100, 100, null);
     }
+
+    public void drawStar(Graphics g) {
+        for(Star star : stars)
+            star.drawStar(g);
+    }
+
+    public void drawStar2(Graphics g) {
+        for(Star2 star : stars2)
+            star.drawStar2(g);
+
+    }
+
+    public void drawTree(Graphics g) {
+        for(XmasTree tree : trees)
+            tree.drawTree(g);
+    }
+
 
     // Button Actions
     private class Test implements ActionListener {
@@ -261,6 +392,88 @@ public class Arjun extends JPanel{
             gui = 1;
             repaint();
             revalidate();
+        }
+    }
+
+    private class doneListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            santaMenu.remove(insert);
+            santaMenu.add(doneMenu);
+            
+            ArrayList<Integer> randIndex = new ArrayList<Integer>();
+            for(int j = 0; j < people.size(); j++){
+                randIndex.add(j);
+            }
+
+            Collections.shuffle(randIndex);
+
+            for(int j = 0; j < randIndex.size(); j++){
+                while(j == randIndex.get(j)){
+                    Collections.shuffle(randIndex);
+                    j = 0;
+                }
+            }
+            
+            for(int j = 0; j < people.size(); j++){
+                people.get(j).assignPerson(people.get(randIndex.get(j)));
+            }
+
+            wishName = new JLabel(people.get(0).getName()+"! You are "+people.get(0).getPerson()+"'s Secret Santa!", SwingConstants.CENTER);
+            wishName.setForeground(Color.WHITE);
+            wishName.setFont(new Font("Roboto", Font.BOLD, 20));
+            doneMenu2.add(wishName);
+
+            JPanel fillPanel = new JPanel();
+            fillPanel.setOpaque(false);
+            fillPanel.setPreferredSize(new Dimension(0, HEIGHT/32));
+                doneMenu2.add(fillPanel);
+            
+            wishList = new JLabel("Here's is that person's wishlist:", SwingConstants.CENTER);
+                wishList.setForeground(Color.WHITE);
+                wishList.setFont(new Font("Roboto", Font.BOLD, 20));
+                doneMenu2.add(wishList);
+
+
+            //int num = people.get(0).getPerson2().getWishlist().size();
+            //System.out.println(num);
+
+            JPanel wishPanel2 = new JPanel(new GridLayout(2,0));
+                wishPanel2.setOpaque(false);
+                doneMenu2.add(wishPanel2);
+
+            JLabel l10 = new JLabel("1) Pumpkin Pie");
+                l10.setFont(new Font("Roboto", Font.BOLD, 20));
+                l10.setForeground(Color.WHITE);
+                wishPanel2.add(l10);
+            
+            JLabel l11 = new JLabel("2) Beanie");
+                l11.setFont(new Font("Roboto", Font.BOLD, 20));
+                l11.setForeground(Color.WHITE);
+                wishPanel2.add(l11);
+
+            gui = 2;
+            repaint();
+            revalidate();
+        }
+    }
+
+    private class addWishListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            if(insertName.getText().length() > 0) {
+                wishlist.add(insertWish.getText());
+                insertWish.setText("");
+            }
+        }
+    }
+
+    private class addPersonListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            if(insertName.getText().length() > 0) {
+                SSPerson person = new SSPerson(insertName.getText(), wishlist);
+                people.add(person);
+                insertName.setText("");
+                insertWish.setText("");
+            }
         }
     }
 
